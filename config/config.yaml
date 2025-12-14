@@ -1,0 +1,89 @@
+# NIFTY50 Ensemble Model Configuration
+
+# Market Data Settings
+market:
+  # Top 10 NIFTY50 stocks by weight
+  tickers:
+    - RELIANCE.NS
+    - TCS.NS
+    - HDFCBANK.NS
+    - INFY.NS
+    - ICICIBANK.NS
+    - HINDUNILVR.NS
+    - ITC.NS
+    - SBIN.NS
+    - BHARTIARTL.NS
+    - KOTAKBANK.NS
+  
+  period: "2y"  # 2 years of historical data
+  interval: "1d"  # Daily data
+  
+  # Technical Indicators
+  indicators:
+    rsi_length: 14
+    bbands_length: 20
+    macd_fast: 12
+    macd_slow: 26
+    atr_length: 14
+
+# News & Sentiment Settings
+sentiment:
+  rss_feeds:
+    - "https://www.moneycontrol.com/rss/marketreports.xml"
+    - "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms"
+  
+  # Hugging Face Model
+  model: "Vansh180/FinBERT-India-v1"
+  max_tokens: 512
+  
+  # Sentiment aggregation
+  moving_average_days: 5
+
+# Model Architecture
+model:
+  # LSTM Branch (Price Data)
+  lstm:
+    lookback_days: 30
+    features: 5  # OHLCV
+    bidirectional: true
+    units_layer1: 64
+    units_layer2: 32
+    dropout_rate: 0.2
+  
+  # Sentiment Branch
+  sentiment_branch:
+    dense_units: 8
+  
+  # Fusion Layer
+  fusion:
+    dense_units: 16
+    dropout_rate: 0.1
+  
+  # Training
+  training:
+    epochs: 50
+    batch_size: 32
+    validation_split: 0.2
+    optimizer: "adam"
+    loss: "binary_crossentropy"
+    early_stopping_patience: 10
+
+# Risk Management (Kelly Criterion Agent)
+risk:
+  min_confidence: 0.60  # Minimum model probability to trade
+  kelly_fraction: 0.5  # Half-Kelly for safety
+  sentiment_conflict_penalty: 0.5  # Position size reduction on divergence
+
+# Data Paths
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  models: "data/models"
+  logs: "logs"
+
+# Training/Validation Split
+data_split:
+  train_start: "2023-01-01"
+  train_end: "2024-12-31"
+  validation_start: "2025-01-01"
+  validation_end: "2025-02-28"

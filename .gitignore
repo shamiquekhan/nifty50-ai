@@ -1,0 +1,82 @@
+# .gitignore for NIFTY50 Ensemble Project
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data Files (don't commit large datasets)
+data/raw/*.csv
+data/processed/*.csv
+data/processed/*.pkl
+data/results/*.csv
+data/results/*.png
+
+# Model Files (too large for git)
+data/models/*.keras
+data/models/*.h5
+data/models/*.weights
+models/*.keras
+models/*.h5
+models/training_history.csv
+models/finetune_history_*.csv
+models/lstm_model_backup_*.keras
+
+# Keep directory structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/models/.gitkeep
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Hugging Face cache
+.cache/
+transformers_cache/
+
+# Plots and figures (optional - uncomment to exclude)
+# *.png
+# *.jpg
