@@ -853,6 +853,160 @@ if not market_df.empty:
     else:
         st.info("⚪ Click 'RUN BACKTEST' button above or run: `python src/backtesting.py`")
     
+    st.markdown("---")
+    
+    # Advanced Quantitative Analytics Section
+    st.markdown('<div class="section-header">ADVANCED QUANT ANALYTICS</div>', unsafe_allow_html=True)
+    st.markdown('<p style="color: #808080; font-family: Share Tech Mono; font-size: 0.9rem; margin-bottom: 1.5rem;">Time-Series Intuition • Stochastic Calculus • Risk Decomposition</p>', unsafe_allow_html=True)
+    
+    if not stock_data.empty and len(stock_data) > 30:
+        try:
+            from src.quant_analytics import QuantAnalytics
+            
+            qa = QuantAnalytics()
+            prices = stock_data['Close'].dropna()
+            
+            # Run comprehensive analysis
+            analysis = qa.comprehensive_analysis(prices)
+            
+            # Section 1: Return Distribution & Fat Tails
+            st.markdown('<div style="background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%); padding: 1.5rem; border-radius: 8px; border: 1px solid #D71921; margin-bottom: 1rem;">', unsafe_allow_html=True)
+            st.markdown('<p style="color: #D71921; font-family: Doto; font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem;">📊 RETURN DISTRIBUTION • FAT TAILS ANALYSIS</p>', unsafe_allow_html=True)
+            
+            ret_analysis = analysis['returns_analysis']
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">SKEWNESS</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{ret_analysis["skewness"]:.3f}</p></div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">EXCESS KURTOSIS</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{ret_analysis["excess_kurtosis"]:.3f}</p></div>', unsafe_allow_html=True)
+            with col3:
+                tail_color = "#D71921" if "FAT" in ret_analysis["tail_type"] else "#00FF00"
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">TAIL TYPE</p><p style="color: {tail_color}; font-size: 0.9rem; font-weight: bold;">{ret_analysis["tail_type"]}</p></div>', unsafe_allow_html=True)
+            with col4:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">VaR 95%</p><p style="color: #D71921; font-size: 1.3rem; font-weight: bold;">{ret_analysis["var_95"]*100:.2f}%</p></div>', unsafe_allow_html=True)
+            
+            st.markdown('<p style="color: #FFFFFF; font-size: 0.85rem; margin-top: 1rem;"><strong>Interpretation:</strong> ' + 
+                       (f'Fat tails detected (excess kurtosis {ret_analysis["excess_kurtosis"]:.2f} > 2) - expect extreme moves more often than normal distribution. ' if ret_analysis["excess_kurtosis"] > 2 else 'Normal tail behavior - returns follow expected distribution. ') +
+                       (f'Negative skew ({ret_analysis["skewness"]:.2f}) means large losses more likely than large gains.' if ret_analysis["skewness"] < -0.5 else f'Positive skew ({ret_analysis["skewness"]:.2f}) means large gains more likely than large losses.' if ret_analysis["skewness"] > 0.5 else 'Symmetric return distribution.') +
+                       '</p>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Section 2: Volatility Clustering
+            st.markdown('<div style="background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%); padding: 1.5rem; border-radius: 8px; border: 1px solid #D71921; margin-bottom: 1rem;">', unsafe_allow_html=True)
+            st.markdown('<p style="color: #D71921; font-family: Doto; font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem;">⚡ VOLATILITY CLUSTERING • REGIME DETECTION</p>', unsafe_allow_html=True)
+            
+            vol_cluster = analysis['volatility_clustering']
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">CURRENT VOL</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{vol_cluster["current_vol"]*100:.2f}%</p></div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">AVG VOL</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{vol_cluster["avg_vol"]*100:.2f}%</p></div>', unsafe_allow_html=True)
+            with col3:
+                regime_color = "#D71921" if "HIGH" in vol_cluster["regime"] else "#00FF00" if "LOW" in vol_cluster["regime"] else "#FFA500"
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">REGIME</p><p style="color: {regime_color}; font-size: 0.9rem; font-weight: bold;">{vol_cluster["regime"]}</p></div>', unsafe_allow_html=True)
+            with col4:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">CLUSTERING</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{vol_cluster["clustering_coef"]:.3f}</p></div>', unsafe_allow_html=True)
+            
+            st.markdown('<p style="color: #FFFFFF; font-size: 0.85rem; margin-top: 1rem;"><strong>Interpretation:</strong> ' +
+                       ('High volatility clustering detected (coef > 0.3) - volatility shocks persist, adjust position sizing. ' if vol_cluster["clustering_coef"] > 0.3 else 'Low volatility persistence - independent daily moves. ') +
+                       f'Current vol is {vol_cluster["vol_ratio"]:.1f}x average. Risk level: {vol_cluster["risk_level"]}.' +
+                       '</p>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Section 3: Mean Reversion
+            st.markdown('<div style="background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%); padding: 1.5rem; border-radius: 8px; border: 1px solid #D71921; margin-bottom: 1rem;">', unsafe_allow_html=True)
+            st.markdown('<p style="color: #D71921; font-family: Doto; font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem;">🔄 MEAN REVERSION • STATIONARITY TEST</p>', unsafe_allow_html=True)
+            
+            mean_rev = analysis['mean_reversion']
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">ADF STATISTIC</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{mean_rev["adf_stat"]:.3f}</p></div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">P-VALUE</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{mean_rev["adf_pvalue"]:.4f}</p></div>', unsafe_allow_html=True)
+            with col3:
+                stat_color = "#00FF00" if mean_rev["is_stationary"] else "#D71921"
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">STATIONARY</p><p style="color: {stat_color}; font-size: 1.1rem; font-weight: bold;">{"YES" if mean_rev["is_stationary"] else "NO"}</p></div>', unsafe_allow_html=True)
+            with col4:
+                half_life_display = f"{mean_rev['half_life']:.1f}" if mean_rev['half_life'] != np.inf else "∞"
+                st.markdown(f'<div style="text-align: center;"><p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">HALF-LIFE (days)</p><p style="color: #FFFFFF; font-size: 1.3rem; font-weight: bold;">{half_life_display}</p></div>', unsafe_allow_html=True)
+            
+            st.markdown('<p style="color: #FFFFFF; font-size: 0.85rem; margin-top: 1rem;"><strong>Trading Signal:</strong> ' +
+                       f'{mean_rev["trading_signal"]} ' +
+                       ('ADF p-value < 0.05 confirms stationarity - price mean-reverts. ' if mean_rev["is_stationary"] else 'Non-stationary - price trends without reverting to mean. ') +
+                       ('Short half-life indicates fast reversion.' if mean_rev["half_life"] < 30 and mean_rev["half_life"] != np.inf else '')
+                       '</p>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Section 4: Regime Shifts
+            st.markdown('<div style="background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%); padding: 1.5rem; border-radius: 8px; border: 1px solid #D71921; margin-bottom: 1rem;">', unsafe_allow_html=True)
+            st.markdown('<p style="color: #D71921; font-family: Doto; font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem;">🎯 MARKET REGIME • TREND DETECTION</p>', unsafe_allow_html=True)
+            
+            regime = analysis['regime_shifts']
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                trend_color = "#00FF00" if "BULL" in regime["trend"] else "#D71921" if "BEAR" in regime["trend"] else "#FFA500"
+                st.markdown(f'<div style="text-align: center; background: #000000; padding: 1rem; border-radius: 6px; border: 2px solid {trend_color};">' +
+                           f'<p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">TREND REGIME</p>' +
+                           f'<p style="color: {trend_color}; font-size: 1.5rem; font-weight: bold;">{regime["trend"]}</p>' +
+                           f'<p style="color: #FFFFFF; font-size: 0.9rem; margin-top: 0.5rem;">Mean Return: {regime["current_mean"]*100:.2f}%</p>' +
+                           '</div>', unsafe_allow_html=True)
+            with col2:
+                vol_regime_color = "#D71921" if "HIGH" in regime["vol_regime"] else "#00FF00" if "LOW" in regime["vol_regime"] else "#FFA500"
+                st.markdown(f'<div style="text-align: center; background: #000000; padding: 1rem; border-radius: 6px; border: 2px solid {vol_regime_color};">' +
+                           f'<p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">VOLATILITY REGIME</p>' +
+                           f'<p style="color: {vol_regime_color}; font-size: 1.1rem; font-weight: bold;">{regime["vol_regime"]}</p>' +
+                           f'<p style="color: #FFFFFF; font-size: 0.9rem; margin-top: 0.5rem;">Std Dev: {regime["current_std"]*100:.2f}%</p>' +
+                           '</div>', unsafe_allow_html=True)
+            
+            st.markdown(f'<p style="color: #FFFFFF; font-size: 0.95rem; margin-top: 1rem; text-align: center; background: #1A1A1A; padding: 0.8rem; border-radius: 6px;"><strong>📌 RECOMMENDATION:</strong> {regime["recommendation"]}</p>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Section 5: GBM Parameters (Stochastic Calculus)
+            st.markdown('<div style="background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%); padding: 1.5rem; border-radius: 8px; border: 1px solid #D71921; margin-bottom: 1rem;">', unsafe_allow_html=True)
+            st.markdown('<p style="color: #D71921; font-family: Doto; font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem;">🎲 STOCHASTIC CALCULUS • GBM PARAMETERS</p>', unsafe_allow_html=True)
+            st.markdown('<p style="color: #808080; font-size: 0.85rem; margin-bottom: 1rem;">Geometric Brownian Motion: dS = μ·S·dt + σ·S·dW</p>', unsafe_allow_html=True)
+            
+            gbm = analysis['gbm_parameters']
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                drift_color = "#00FF00" if gbm["drift"] > 0 else "#D71921"
+                st.markdown(f'<div style="text-align: center; background: #000000; padding: 1rem; border-radius: 6px;">' +
+                           f'<p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">DRIFT (μ)</p>' +
+                           f'<p style="color: {drift_color}; font-size: 1.8rem; font-weight: bold;">{gbm["drift"]*100:.2f}%</p>' +
+                           f'<p style="color: #FFFFFF; font-size: 0.8rem; margin-top: 0.5rem;">{gbm["drift_type"]}</p>' +
+                           '</div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown(f'<div style="text-align: center; background: #000000; padding: 1rem; border-radius: 6px;">' +
+                           f'<p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">DIFFUSION (σ)</p>' +
+                           f'<p style="color: #FFA500; font-size: 1.8rem; font-weight: bold;">{gbm["diffusion"]*100:.2f}%</p>' +
+                           f'<p style="color: #FFFFFF; font-size: 0.8rem; margin-top: 0.5rem;">{gbm["vol_type"]}</p>' +
+                           '</div>', unsafe_allow_html=True)
+            with col3:
+                sharpe_color = "#00FF00" if gbm["sharpe_ratio"] > 1 else "#FFA500" if gbm["sharpe_ratio"] > 0 else "#D71921"
+                st.markdown(f'<div style="text-align: center; background: #000000; padding: 1rem; border-radius: 6px;">' +
+                           f'<p style="color: #808080; font-size: 0.8rem; margin-bottom: 0.3rem;">SHARPE RATIO</p>' +
+                           f'<p style="color: {sharpe_color}; font-size: 1.8rem; font-weight: bold;">{gbm["sharpe_ratio"]:.2f}</p>' +
+                           f'<p style="color: #FFFFFF; font-size: 0.8rem; margin-top: 0.5rem;">{"EXCELLENT" if gbm["sharpe_ratio"] > 2 else "GOOD" if gbm["sharpe_ratio"] > 1 else "FAIR" if gbm["sharpe_ratio"] > 0 else "POOR"}</p>' +
+                           '</div>', unsafe_allow_html=True)
+            
+            st.markdown('<p style="color: #FFFFFF; font-size: 0.85rem; margin-top: 1rem;"><strong>Interpretation:</strong> ' +
+                       f'Drift (μ = {gbm["drift"]*100:.2f}%) represents expected annual return direction. ' +
+                       f'Diffusion (σ = {gbm["diffusion"]*100:.2f}%) is annualized volatility from Brownian motion randomness. ' +
+                       f'Sharpe ratio {gbm["sharpe_ratio"]:.2f} indicates risk-adjusted return quality.' +
+                       '</p>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        except Exception as e:
+            st.error(f"⚠ Analytics Error: {str(e)}")
+            st.info("Need at least 30 days of data for comprehensive analysis")
+    else:
+        st.info("⚪ Need minimum 30 days of market data for quantitative analysis")
+    
 else:
     st.warning("⚠ NO DATA FOUND")
     
