@@ -26,6 +26,14 @@ except ImportError as e:
     MODELS_AVAILABLE = False
     print(f"Note: Some modules not available: {e}")
 
+# Import live price fetcher
+try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    YFINANCE_AVAILABLE = False
+    print("Note: yfinance not available - install with: pip install yfinance")
+
 # ==================== NOTHING BRAND DESIGN SYSTEM ====================
 # Color Palette (Nothing Brand Identity + Dot Matrix Red)
 NOTHING_COLORS = {
@@ -222,6 +230,49 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ===== LIVE PRICE FETCHER =====
+@st.cache_data(ttl=60)  # Cache for 60 seconds
+def get_live_price(ticker: str) -> float:
+    """Fetch live price from Yahoo Finance (NSE)"""
+    if not YFINANCE_AVAILABLE:
+        return None
+    
+    try:
+        yahoo_ticker = f"{ticker}.NS"
+        stock = yf.Ticker(yahoo_ticker)
+        
+        # Try multiple methods to get current price
+        info = stock.info
+        price = (
+            info.get('currentPrice') or 
+            info.get('regularMarketPrice') or 
+            info.get('previousClose')
+        )
+        
+        if price is None:
+            # Fallback: latest close from history
+            hist = stock.history(period='1d')
+            if not hist.empty:
+                price = hist['Close'].iloc[-1]
+        
+        return float(price) if price else None
+    except Exception as e:
+        print(f"Error fetching live price for {ticker}: {e}")
+        return None
+
+@st.cache_data(ttl=60)
+def get_live_prices_batch(tickers: list) -> dict:
+    """Fetch live prices for multiple tickers"""
+    if not YFINANCE_AVAILABLE:
+        return {}
+    
+    prices = {}
+    for ticker in tickers:
+        price = get_live_price(ticker)
+        if price:
+            prices[ticker] = price
+    return prices
+
 # Inject custom CSS
 st.markdown(DOT_MATRIX_CSS, unsafe_allow_html=True)
 
@@ -358,6 +409,10 @@ if not predictions_df.empty:
     buy_stocks = buy_stocks.sort_values('model_probability', ascending=False)
     
     if not buy_stocks.empty:
+        # Fetch live prices for top recommendations
+        top_tickers = buy_stocks.head(3)['ticker'].tolist()
+        live_prices = get_live_prices_batch(top_tickers)
+        
         # Top 3 recommendations
         top_3 = buy_stocks.head(3)
         
@@ -369,7 +424,12 @@ if not predictions_df.empty:
                 rank = idx + 1
                 ticker = stock['ticker']
                 prob = stock['model_probability']
-                price = stock['latest_price']
+                
+                # Use LIVE price if available, otherwise fallback to stored price
+                price = live_prices.get(ticker, stock['latest_price'])
+                price_label = "LIVE PRICE" if ticker in live_prices else "LAST PRICE"
+                price_color = "#00FF00" if ticker in live_prices else "#FFA500"
+                
                 kelly = stock['kelly_fraction']
                 position = stock['position_size']
                 rsi = stock['rsi']
@@ -393,8 +453,8 @@ if not predictions_df.empty:
                     </div>
                     <h2 style="color: #FFFFFF; font-family: 'Doto', monospace; font-size: 2rem; margin: 10px 0; text-align: center;">{ticker}</h2>
                     <div style="text-align: center; margin: 15px 0;">
-                        <p style="color: #808080; font-size: 0.8rem; margin: 0;">CURRENT PRICE</p>
-                        <p style="color: #00FF00; font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; margin: 5px 0;">₹{price:.2f}</p>
+                        <p style="color: #808080; font-size: 0.8rem; margin: 0;">{price_label}</p>
+                        <p style="color: {price_color}; font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; margin: 5px 0;">₹{price:.2f}</p>
                     </div>
                     <hr style="border: 1px solid #333; margin: 15px 0;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
