@@ -386,86 +386,28 @@ if not predictions_df.empty:
                     conf_color = "#FFA500"
                 
                 # Card HTML
-                st.markdown(f"""
-                <div style="
-                    background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%);
-                    border: 2px solid #D71921;
-                    border-radius: 10px;
-                    padding: 20px;
-                    margin: 10px 0;
-                    box-shadow: 0 0 20px rgba(215, 25, 33, 0.3);
-                ">
+                card_html = f'''<div style="background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%); border: 2px solid #D71921; border-radius: 10px; padding: 20px; margin: 10px 0; box-shadow: 0 0 20px rgba(215, 25, 33, 0.3);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <span style="
-                            background: #D71921;
-                            color: #FFFFFF;
-                            font-family: 'Doto', monospace;
-                            font-weight: 900;
-                            padding: 5px 15px;
-                            border-radius: 5px;
-                            font-size: 1.2rem;
-                        ">#{rank}</span>
+                        <span style="background: #D71921; color: #FFFFFF; font-family: 'Doto', monospace; font-weight: 900; padding: 5px 15px; border-radius: 5px; font-size: 1.2rem;">#{rank}</span>
                         <span style="color: {conf_color}; font-family: 'Doto', monospace; font-size: 0.9rem;">{confidence}</span>
                     </div>
-                    
-                    <h2 style="
-                        color: #FFFFFF;
-                        font-family: 'Doto', monospace;
-                        font-size: 2rem;
-                        margin: 10px 0;
-                        text-align: center;
-                    ">{ticker}</h2>
-                    
+                    <h2 style="color: #FFFFFF; font-family: 'Doto', monospace; font-size: 2rem; margin: 10px 0; text-align: center;">{ticker}</h2>
                     <div style="text-align: center; margin: 15px 0;">
                         <p style="color: #808080; font-size: 0.8rem; margin: 0;">CURRENT PRICE</p>
-                        <p style="color: #00FF00; font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; margin: 5px 0;">
-                            ₹{price:.2f}
-                        </p>
+                        <p style="color: #00FF00; font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; margin: 5px 0;">₹{price:.2f}</p>
                     </div>
-                    
                     <hr style="border: 1px solid #333; margin: 15px 0;">
-                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
-                        <div>
-                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">AI CONFIDENCE</p>
-                            <p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
-                                {prob:.1%}
-                            </p>
-                        </div>
-                        <div>
-                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">RSI</p>
-                            <p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
-                                {rsi:.1f}
-                            </p>
-                        </div>
-                        <div>
-                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">KELLY %</p>
-                            <p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
-                                {kelly:.1%}
-                            </p>
-                        </div>
-                        <div>
-                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">POSITION</p>
-                            <p style="color: #00FF00; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
-                                ₹{position:,.0f}
-                            </p>
-                        </div>
+                        <div><p style="color: #808080; font-size: 0.75rem; margin: 0;">AI CONFIDENCE</p><p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">{prob:.1%}</p></div>
+                        <div><p style="color: #808080; font-size: 0.75rem; margin: 0;">RSI</p><p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">{rsi:.1f}</p></div>
+                        <div><p style="color: #808080; font-size: 0.75rem; margin: 0;">KELLY %</p><p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">{kelly:.1%}</p></div>
+                        <div><p style="color: #808080; font-size: 0.75rem; margin: 0;">POSITION</p><p style="color: #00FF00; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">₹{position:,.0f}</p></div>
                     </div>
-                    
                     <div style="text-align: center; margin-top: 15px;">
-                        <span style="
-                            background: linear-gradient(90deg, #D71921 0%, #FF3344 100%);
-                            color: #FFFFFF;
-                            font-family: 'Doto', monospace;
-                            font-weight: 900;
-                            padding: 10px 20px;
-                            border-radius: 5px;
-                            font-size: 1rem;
-                            letter-spacing: 2px;
-                        ">🎯 BUY SIGNAL</span>
+                        <span style="background: linear-gradient(90deg, #D71921 0%, #FF3344 100%); color: #FFFFFF; font-family: 'Doto', monospace; font-weight: 900; padding: 10px 20px; border-radius: 5px; font-size: 1rem; letter-spacing: 2px;">🎯 BUY SIGNAL</span>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
+                </div>'''
+                st.markdown(card_html, unsafe_allow_html=True)
         
         # Show all BUY recommendations in table
         st.markdown("---")
