@@ -349,6 +349,142 @@ if not market_df.empty and alert_engine:
         
         st.markdown("---")
 
+# ===== TOP STOCK RECOMMENDATIONS SECTION =====
+if not predictions_df.empty:
+    st.markdown('<div class="section-header">⭐ TOP STOCK RECOMMENDATIONS</div>', unsafe_allow_html=True)
+    
+    # Filter BUY signals and sort by model probability
+    buy_stocks = predictions_df[predictions_df['action'] == 'BUY'].copy()
+    buy_stocks = buy_stocks.sort_values('model_probability', ascending=False)
+    
+    if not buy_stocks.empty:
+        # Top 3 recommendations
+        top_3 = buy_stocks.head(3)
+        
+        rec_cols = st.columns(3)
+        
+        for idx, (_, stock) in enumerate(top_3.iterrows()):
+            with rec_cols[idx]:
+                # Create recommendation card
+                rank = idx + 1
+                ticker = stock['ticker']
+                prob = stock['model_probability']
+                price = stock['latest_price']
+                kelly = stock['kelly_fraction']
+                position = stock['position_size']
+                rsi = stock['rsi']
+                
+                # Confidence level
+                if prob > 0.75:
+                    confidence = "🟢 VERY HIGH"
+                    conf_color = "#00FF00"
+                elif prob > 0.70:
+                    confidence = "🟢 HIGH"
+                    conf_color = "#00FF00"
+                else:
+                    confidence = "🟡 MODERATE"
+                    conf_color = "#FFA500"
+                
+                # Card HTML
+                st.markdown(f"""
+                <div style="
+                    background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%);
+                    border: 2px solid #D71921;
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin: 10px 0;
+                    box-shadow: 0 0 20px rgba(215, 25, 33, 0.3);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span style="
+                            background: #D71921;
+                            color: #FFFFFF;
+                            font-family: 'Doto', monospace;
+                            font-weight: 900;
+                            padding: 5px 15px;
+                            border-radius: 5px;
+                            font-size: 1.2rem;
+                        ">#{rank}</span>
+                        <span style="color: {conf_color}; font-family: 'Doto', monospace; font-size: 0.9rem;">{confidence}</span>
+                    </div>
+                    
+                    <h2 style="
+                        color: #FFFFFF;
+                        font-family: 'Doto', monospace;
+                        font-size: 2rem;
+                        margin: 10px 0;
+                        text-align: center;
+                    ">{ticker}</h2>
+                    
+                    <div style="text-align: center; margin: 15px 0;">
+                        <p style="color: #808080; font-size: 0.8rem; margin: 0;">CURRENT PRICE</p>
+                        <p style="color: #00FF00; font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; margin: 5px 0;">
+                            ₹{price:.2f}
+                        </p>
+                    </div>
+                    
+                    <hr style="border: 1px solid #333; margin: 15px 0;">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+                        <div>
+                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">AI CONFIDENCE</p>
+                            <p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
+                                {prob:.1%}
+                            </p>
+                        </div>
+                        <div>
+                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">RSI</p>
+                            <p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
+                                {rsi:.1f}
+                            </p>
+                        </div>
+                        <div>
+                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">KELLY %</p>
+                            <p style="color: #FFFFFF; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
+                                {kelly:.1%}
+                            </p>
+                        </div>
+                        <div>
+                            <p style="color: #808080; font-size: 0.75rem; margin: 0;">POSITION</p>
+                            <p style="color: #00FF00; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; margin: 5px 0;">
+                                ₹{position:,.0f}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <span style="
+                            background: linear-gradient(90deg, #D71921 0%, #FF3344 100%);
+                            color: #FFFFFF;
+                            font-family: 'Doto', monospace;
+                            font-weight: 900;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            font-size: 1rem;
+                            letter-spacing: 2px;
+                        ">🎯 BUY SIGNAL</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Show all BUY recommendations in table
+        st.markdown("---")
+        st.markdown('<div class="metric-label">ALL BUY RECOMMENDATIONS</div>', unsafe_allow_html=True)
+        
+        display_df = buy_stocks[['ticker', 'model_probability', 'latest_price', 'kelly_fraction', 'position_size', 'rsi']].copy()
+        display_df.columns = ['TICKER', 'AI CONFIDENCE', 'PRICE (₹)', 'KELLY %', 'POSITION (₹)', 'RSI']
+        display_df['AI CONFIDENCE'] = display_df['AI CONFIDENCE'].apply(lambda x: f"{x:.1%}")
+        display_df['PRICE (₹)'] = display_df['PRICE (₹)'].apply(lambda x: f"₹{x:.2f}")
+        display_df['KELLY %'] = display_df['KELLY %'].apply(lambda x: f"{x:.1%}")
+        display_df['POSITION (₹)'] = display_df['POSITION (₹)'].apply(lambda x: f"₹{x:,.0f}")
+        display_df['RSI'] = display_df['RSI'].apply(lambda x: f"{x:.1f}")
+        
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+    else:
+        st.info("⚪ NO BUY SIGNALS CURRENTLY • MARKET IN WAIT MODE")
+
+st.markdown("---")
+
 # Stock selector - Top of page (No sidebar)
 if not market_df.empty:
     st.markdown('<div class="section-header">SELECT STOCK</div>', unsafe_allow_html=True)
