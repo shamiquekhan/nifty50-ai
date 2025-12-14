@@ -1,6 +1,7 @@
 """
 News Scraper Module
-Collects financial news from RSS feeds (MoneyControl, Economic Times).
+Collects financial news from RSS feeds (MoneyControl, Economic Times, LiveMint).
+Enhanced with unlimited free sources - Industry secret for proprietary datasets.
 """
 
 import feedparser
@@ -10,21 +11,42 @@ from datetime import datetime
 from pathlib import Path
 import time
 from typing import List, Dict
+import hashlib
+import logging
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 class NewsScraper:
-    """Scrapes financial news from RSS feeds."""
+    """Scrapes financial news from RSS feeds - Unlimited & Free."""
     
     def __init__(self, config_path: str = "config/config.yaml"):
         """Initialize with configuration."""
         with open(config_path, 'r') as f:
             self.config = yaml.safe_load(f)
         
-        self.rss_urls = self.config['sentiment']['rss_feeds']
+        # Enhanced RSS sources (Industry secret - unlimited access)
+        self.rss_urls = {
+            'moneycontrol_market': 'https://www.moneycontrol.com/rss/marketreports.xml',
+            'moneycontrol_business': 'https://www.moneycontrol.com/rss/business.xml',
+            'economic_times_stocks': 'https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms',
+            'economic_times_economy': 'https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms',
+            'livemint_markets': 'https://www.livemint.com/rss/markets',
+            'livemint_companies': 'https://www.livemint.com/rss/companies'
+        }
+        
         self.raw_data_path = Path(self.config['paths']['raw_data'])
         
         # Ensure data directory exists
         self.raw_data_path.mkdir(parents=True, exist_ok=True)
+        
+        # Track seen articles to avoid duplicates
+        self.seen_hashes = set()
     
     def parse_date(self, date_string: str) -> datetime:
         """

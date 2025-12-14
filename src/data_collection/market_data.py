@@ -1,6 +1,7 @@
 """
 Market Data Collection Module
-Downloads NIFTY50 stock data using yfinance and adds technical indicators using pandas-ta.
+Downloads NIFTY50 stock data using best available source (Shoonya API or yfinance).
+Industry secret: Zero-brokerage brokers provide unlimited free API access.
 """
 
 import yfinance as yf
@@ -10,6 +11,14 @@ import yaml
 import os
 from datetime import datetime
 from pathlib import Path
+import logging
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 class MarketDataCollector:
@@ -27,10 +36,24 @@ class MarketDataCollector:
         
         # Ensure data directory exists
         self.raw_data_path.mkdir(parents=True, exist_ok=True)
+        
+        # Try to load Shoonya API (optional - unlimited free data)
+        self.shoonya_available = False
+        try:
+            from src.data_collection.shoonya_api import ShoonyaDataFeed
+            self.shoonya = ShoonyaDataFeed()
+            if self.shoonya.connect():
+                self.shoonya_available = True
+                logger.info("✓ Using Shoonya API (Unlimited Free Data)")
+            else:
+                logger.info("⚠ Shoonya not configured, using yfinance")
+        except ImportError:
+            logger.info("⚠ Shoonya library not installed, using yfinance")
+            logger.info("💡 Tip: Open free Shoonya account for unlimited API access")
     
     def download_stock_data(self, ticker: str) -> pd.DataFrame:
         """
-        Download market data for a single ticker.
+        Download market data for a single ticker using best available source.
         
         Args:
             ticker: Stock ticker symbol (e.g., 'RELIANCE.NS')
@@ -38,13 +61,29 @@ class MarketDataCollector:
         Returns:
             DataFrame with OHLCV data
         """
-        print(f"📥 Downloading data for {ticker}...")
+        logger.info(f"📥 Downloading data for {ticker}...")
         
+        # Try Shoonya first (unlimited)
+        if self.shoonya_available:
+            try:
+                symbol = ticker.replace('.NS', '')
+                df = self.shoonya.get_historical_data(
+                    symbol=f"{symbol}-EQ",
+                    exchange='NSE'
+                )
+                if not df.empty:
+                    df['Ticker'] = symbol
+                    logger.info(f"✅ Downloaded {len(df)} records via Shoonya API")
+                    return df
+            except Exception as e:
+                logger.warning(f"Shoonya failed, falling back to yfinance: {e}")
+        
+        # Fallback to yfinance (reliable for historical data)
         try:
             df = yf.download(ticker, period=self.period, interval=self.interval, progress=False)
             
             if df.empty:
-                print(f"⚠️  No data found for {ticker}")
+                logger.warning(f"⚠️  No data found for {ticker}")
                 return None
             
             # Flatten multi-index columns if present
@@ -54,11 +93,11 @@ class MarketDataCollector:
             # Add ticker column
             df['Ticker'] = ticker.replace('.NS', '')
             
-            print(f"✅ Downloaded {len(df)} records for {ticker}")
+            logger.info(f"✅ Downloaded {len(df)} records for {ticker}")
             return df
             
         except Exception as e:
-            print(f"❌ Error downloading {ticker}: {str(e)}")
+            logger.error(f"❌ Error downloading {ticker}: {str(e)}")
             return None
     
     def add_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:

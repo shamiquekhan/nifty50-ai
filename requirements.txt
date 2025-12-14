@@ -3,16 +3,23 @@ yfinance>=0.2.33
 pandas>=2.0.0
 numpy>=1.24.0
 pandas-ta>=0.3.14b
+feedparser>=6.0.10
+
+# Shoonya API (Zero Brokerage - Unlimited Free Data)
+# Uncomment after opening free account at https://shoonya.com
+# NorenRestApiPy>=0.0.24
 
 # NLP & Sentiment Analysis
 transformers>=4.35.0
 torch>=2.0.0
-feedparser>=6.0.10
+sentencepiece>=0.1.99
 
 # Deep Learning
 tensorflow>=2.14.0
 keras>=2.14.0
 scikit-learn>=1.3.0
+scipy>=1.11.0
+statsmodels>=0.14.0
 
 # Data Visualization & Dashboard
 matplotlib>=3.7.0

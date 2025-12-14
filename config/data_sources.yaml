@@ -1,0 +1,100 @@
+# Data Sources Configuration
+# Free & Unlimited Sources for NIFTY50 Trading System
+
+# Primary Market Data Source
+market_data:
+  primary: 'yfinance'  # Options: 'shoonya', 'yfinance', 'jugaad'
+  fallback: 'yfinance'
+  
+  # Shoonya API (Zero Brokerage - Unlimited API)
+  # Sign up: https://shoonya.com
+  shoonya:
+    enabled: false
+    user_id: ''  # Set via environment: SHOONYA_USER_ID
+    password: ''  # Set via environment: SHOONYA_PASSWORD
+    vendor_code: ''  # Set via environment: SHOONYA_VENDOR_CODE
+    api_key: ''  # Set via environment: SHOONYA_API_KEY
+    imei: 'abc1234'
+  
+  # yfinance (Reliable for Historical Data)
+  yfinance:
+    enabled: true
+    suffix: '.NS'  # NSE suffix
+    max_threads: 5
+
+# News & Sentiment Sources (RSS Feeds - Unlimited)
+news_sources:
+  rss_feeds:
+    moneycontrol_market: 'https://www.moneycontrol.com/rss/marketreports.xml'
+    moneycontrol_business: 'https://www.moneycontrol.com/rss/business.xml'
+    economic_times_stocks: 'https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms'
+    economic_times_economy: 'https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms'
+    livemint_markets: 'https://www.livemint.com/rss/markets'
+    livemint_companies: 'https://www.livemint.com/rss/companies'
+  
+  # Harvest Settings
+  harvest_interval_minutes: 15
+  max_articles_per_source: 100
+  
+  # Google News (For historical search)
+  google_news:
+    enabled: true
+    max_results: 10
+
+# Fundamental Data Sources
+fundamental_data:
+  # Screener.in (P/E, ROE, Debt ratios)
+  screener:
+    enabled: true
+    base_url: 'https://www.screener.in/company'
+  
+  # NSE Corporate Announcements
+  nse_corporate:
+    enabled: true
+    url: 'https://www.nseindia.com/companies-listing/corporate-filings-announcements'
+
+# Macro Economic Data
+macro_data:
+  # RBI Database
+  rbi:
+    enabled: true
+    url: 'https://dbie.rbi.org.in/'
+  
+  # NIFTY Indices (For Index P/E, P/B)
+  nifty_indices:
+    enabled: true
+    url: 'https://www.niftyindices.com/reports/historical-data'
+
+# Data Storage
+storage:
+  # Local database (DuckDB recommended for ML)
+  database_type: 'csv'  # Options: 'csv', 'duckdb', 'sqlite', 'postgres'
+  data_dir: 'data'
+  
+  # Retention policy
+  market_data_retention_days: 1825  # 5 years
+  news_retention_days: 365  # 1 year
+  
+  # Backup
+  backup_enabled: true
+  backup_dir: 'backups/data'
+
+# Rate Limiting & Politeness
+rate_limits:
+  yfinance_delay_seconds: 1
+  rss_delay_seconds: 1
+  max_retries: 3
+  timeout_seconds: 30
+
+# Quality Checks
+quality:
+  min_data_points: 100  # Minimum rows required
+  check_missing_dates: true
+  fill_missing_method: 'forward'  # 'forward', 'interpolate', 'drop'
+  
+# Logging
+logging:
+  level: 'INFO'  # DEBUG, INFO, WARNING, ERROR
+  file: 'logs/data_collection.log'
+  max_size_mb: 100
+  backup_count: 5
