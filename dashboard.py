@@ -936,7 +936,7 @@ if not market_df.empty:
             st.markdown('<p style="color: #FFFFFF; font-size: 0.85rem; margin-top: 1rem;"><strong>Trading Signal:</strong> ' +
                        f'{mean_rev["trading_signal"]} ' +
                        ('ADF p-value < 0.05 confirms stationarity - price mean-reverts. ' if mean_rev["is_stationary"] else 'Non-stationary - price trends without reverting to mean. ') +
-                       ('Short half-life indicates fast reversion.' if mean_rev["half_life"] < 30 and mean_rev["half_life"] != np.inf else '')
+                       ('Short half-life indicates fast reversion.' if mean_rev["half_life"] < 30 and mean_rev["half_life"] != np.inf else '') +
                        '</p>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
             
