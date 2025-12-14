@@ -243,8 +243,16 @@ except:
 @st.cache_data(ttl=14400)  # Cache for 4 hours (14400 seconds)
 def load_data():
     """Load latest market and prediction data. Auto-refreshes every 4 hours."""
-    # Market data
+    # Check if data exists, if not generate demo data
     market_files = list(Path('data/raw').glob('market_data_*.csv'))
+    if not market_files:
+        # Generate demo data on first run
+        import subprocess
+        subprocess.run([sys.executable, 'generate_demo_data_now.py'], 
+                      capture_output=True, text=True, timeout=60)
+        market_files = list(Path('data/raw').glob('market_data_*.csv'))
+    
+    # Market data
     if market_files:
         latest_market = max(market_files, key=lambda x: x.stat().st_ctime)
         market_df = pd.read_csv(latest_market, index_col=0, parse_dates=True)
