@@ -146,9 +146,9 @@ class AutoUpdateSystem:
     
     def start(self):
         """Start the automated update system."""
-        logger.info("\n" + "🚀 " * 20)
+        logger.info("\n" + "=" * 70)
         logger.info("STARTING AUTO-UPDATE SYSTEM")
-        logger.info("🚀 " * 20)
+        logger.info("=" * 70)
         
         # Run immediately on start
         logger.info("\n>>> Running initial update...")
@@ -158,9 +158,9 @@ class AutoUpdateSystem:
         schedule.every(self.update_interval).hours.do(self.update_all)
         
         self.is_running = True
-        logger.info(f"\n✓ Auto-update scheduled every {self.update_interval} hours")
-        logger.info("✓ System is now running in background...")
-        logger.info("✓ Press Ctrl+C to stop\n")
+        logger.info(f"\n[OK] Auto-update scheduled every {self.update_interval} hours")
+        logger.info("[OK] System is now running in background...")
+        logger.info("[OK] Press Ctrl+C to stop\n")
         
         # Keep running
         try:
